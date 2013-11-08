@@ -1,0 +1,40 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace MarkdownParser
+{
+    [Record]
+    public class ContentNode
+    {
+        public variant NodeType
+        {
+            | Text
+            | Bold
+            | Italics
+        }
+        public nodeType: NodeType;
+        public text: string;
+    }
+    [Record]
+    public class Node
+    {
+        public variant NodeType
+        {
+            | Heading 
+                {
+                    Level : int
+                }
+            | Paragraph
+            | LineBreak
+            | HorizontalRule
+        }
+        public nodeType : NodeType;
+        public text: string;
+    }
+}

@@ -1,0 +1,39 @@
+﻿using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+using Nemerle.Peg;
+
+using System;
+using System.Collections.Generic;
+using System.Console;
+using System.Linq;
+
+namespace MarkdownParser
+{
+    module Program
+    {
+        Main() : void
+        {
+            def test = System.IO.File.ReadAllText("test.md") + "\n";
+            def parse = Parser();
+            parse.filename = "./test.docx";
+            def result = parse.Parse(test);
+            Debugger(result.Value, array[Node.NodeType.LineBreak() : Node.NodeType]);
+            WriteLine("Press any key to exit");
+            _ = ReadKey();
+        }
+        DotDotDot(text: string, length : int) : string
+        {
+            | _ when (text.Length < length) => text
+            | _ => string.Join("", text.Take(length-3))+"..."
+        }
+        Debugger(nodes : List[Node], filter : array[Node.NodeType]): void
+        {
+            foreach(node when !filter.Contains(node.nodeType) in nodes)
+            {
+                Console.WriteLine(node.nodeType.ToString().Split('+').Last());
+                Console.WriteLine($"\t$(DotDotDot(node.text,50))");
+            }
+        }
+    }
+}

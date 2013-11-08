@@ -1,0 +1,89 @@
+﻿using Nemerle;
+using Nemerle.Collections;
+using Nemerle.Text;
+using Nemerle.Utility;
+using Nemerle.Peg;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace MarkdownParser
+{
+  /// <summary>
+  /// Description of Parser.
+  /// </summary>
+    [PegGrammar(Options = EmitDebugSources, document,
+    grammar
+    {
+        any : char = ['\u0000'..'\uFFFF'];
+        anyChar : char = !('\n' / '\r') any;
+        number = ['0' .. '9'];
+        content : ContentNode = anyChar;
+        newline : void = linebreak;
+        newlines : void = newline+;
+        spaces : void = ' '*;
+        horizontalRule : Node = '-' spaces '-' spaces '-' (spaces '-')* / '=' spaces '=' spaces '=' (spaces '=')* / '*' spaces '*' spaces '*' (spaces '*')*;
+        setextBottom : char = '=' spaces '=' spaces '=' (spaces '=')* / '-' spaces '-' spaces '-' (spaces '-')*;
+        setextHeading : Node = anyChar* newline setextBottom newline;
+        headingMatchSymbol : char = '#';
+        atxHeading : Node = headingMatchSymbol+ spaces (!('#') anyChar)* '#'* newlines?;
+        heading : Node = atxHeading / setextHeading;
+        docPiece : Node = heading;
+        paragraph: Node = (!docPiece anyChar+ newline?)+;
+        linebreak : Node = ("\n\r" / "\r\n" / '\r' / 'n');
+        document : List[Node] = (docPiece / paragraph / linebreak)*;
+      //Rules
+    }
+  )]
+  public class Parser
+  {
+      public mutable filename : string;
+      content(x : char):ContentNode
+      {
+          ContentNode(ContentNode.NodeType.Text(),x.ToString());
+      }
+      horizontalRule(_ : NToken, _:NToken,_:NToken, _:List[NToken]):Node
+      {
+          Node(Node.NodeType.HorizontalRule(),"");
+      }
+      headingMatchSymbol(x : NToken) : char
+      {
+          GetText(x)[0];
+      }
+      setextBottom(symbol: NToken, _ : NToken, _: NToken, _: List[NToken]):char
+      {
+          GetText(symbol)[0];
+      }
+      setextHeading(text: List[char], symbol :char) : Node
+      {
+          createHeader(if (symbol == '=') 1 else 2, text);
+      }
+      createHeader(level: int, letters: List[char]) : Node
+      {
+          def text = string.Join("",letters);
+          Node(Node.NodeType.Heading(level),text);
+      }
+      atxHeading(lvl : List[char], text: List[char], _ : NToken):Node
+      {
+          createHeader(lvl.Count(),text);
+      }
+      linebreak(_ : NToken):Node
+      {
+          Node(Node.NodeType.LineBreak(),"");
+      }
+      any(letter: NToken):char
+      {
+          GetText(letter)[0]
+      }
+      paragraph( letters : List[List[char]]):Node
+      {
+          def text = string.Join("",letters.Select((x)=>string.Join("",x)));
+          Node(Node.NodeType.Paragraph(),text)
+      }
+      document (pieces:List[Node]):List[Node]
+      {
+          pieces
+      }
+  }
+}

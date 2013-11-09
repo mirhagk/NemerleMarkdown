@@ -21,8 +21,8 @@ namespace MarkdownParser
         number = ['0' .. '9'];
         content : ContentNode = bold / italic / link / plain;
         plain : ContentNode = anyChar;
-        bold : ContentNode = "**" (!'*' plain / italic)+ "**";
-        italic: ContentNode = '*' (!'*' plain / bold) + '*';
+        bold : ContentNode = "**" (!'*' plain / italic / bold)+ "**" / "__" (!'_' plain / italic / bold)+ "__";
+        italic: ContentNode = '*' (!'*' plain / bold / italic) + '*' / '_' (!'_' plain / bold / italic) + '_';
         link: ContentNode = '[' (!']' anyChar)+ "](" (!')' anyChar)* ')';
         newline : void = linebreak;
         newlines : void = newline+;

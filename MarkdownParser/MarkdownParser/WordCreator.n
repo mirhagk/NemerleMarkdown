@@ -35,14 +35,24 @@ namespace MarkdownParser
                 _ = match(node.nodeType)
                 {
                     | ContentNode.NodeType.Bold => {
-                        style.Bold=true;
-                        AddNodesToParagraph(document, paragraph, node.innerNodes, style);
-                        style.Bold = false;
+                        if (style.Bold)
+                            AddNodesToParagraph(document, paragraph, node.innerNodes, style);
+                        else
+                        {
+                            style.Bold=true;
+                            AddNodesToParagraph(document, paragraph, node.innerNodes, style);
+                            style.Bold = false;
+                        }
                     }
                     | ContentNode.NodeType.Italics => {
-                        style.Italic = true;
-                        AddNodesToParagraph(document, paragraph, node.innerNodes, style);
-                        style.Italic = false;
+                        if (style.Italic)
+                            AddNodesToParagraph(document, paragraph, node.innerNodes, style);
+                        else
+                        {
+                            style.Italic = true;
+                            AddNodesToParagraph(document, paragraph, node.innerNodes, style);
+                            style.Italic = false;
+                        }
                     }
                     | ContentNode.NodeType.Link(source)=> {
                         def link = if (String.IsNullOrWhiteSpace(source)) node.text else source;

@@ -29,8 +29,8 @@ Markdown is simple to learn, but still rather large, and there's no actual stand
 
 As well the following inline elements:
 
-1. **Bold** - Complete for asterisks, not fully tested
-2. **Italics** - Complete for asterisks, not fully tested
+1. **Bold** - Complete, not fully tested
+2. **Italics** - Complete, not fully tested
 3. **Links** - Partially completed (inline complete, reference not started)
 4. **Inline Code** - Not started
 
@@ -38,3 +38,5 @@ Contribution Help
 --------------
 
 If you'd like to contribute you need to have Nemerle installed. You may have to fix references to `Nemerle.Peg` and `Nemerle.Peg.Macro` (I've had weird issues with it).
+
+You can contribute by extending the parser to support more of the core syntax

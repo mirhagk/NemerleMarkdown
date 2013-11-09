@@ -63,18 +63,6 @@ namespace MarkdownParser
                                }
                 def para = document.InsertParagraph("",false,style);
                 AddNodesToParagraph(para,node.content,style);
-                /*foreach(content in node.content)
-                {
-                    _ = match(content.nodeType)
-                           {
-                               | ContentNode.NodeType.Bold => style.Bold = true;
-                               | ContentNode.NodeType.Italics => style.Italic = true;
-                               | _ => _ = null;
-                           }
-                    para.InsertText(content.text,false,style);
-                    style.Bold = false;
-                    style.Italic = false;
-                }*/
             }
             document;
         }

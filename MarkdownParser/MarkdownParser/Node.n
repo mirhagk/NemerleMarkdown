@@ -12,7 +12,7 @@ namespace MarkdownParser
     [Record]
     public class ContentNode
     {
-        public variant NodeType
+        public enum NodeType
         {
             | Text
             | Bold
@@ -21,7 +21,7 @@ namespace MarkdownParser
         public nodeType: NodeType;
         public text: string;
     }
-    [Record]
+    //[Record]
     public class Node
     {
         public variant NodeType
@@ -35,6 +35,46 @@ namespace MarkdownParser
             | HorizontalRule
         }
         public nodeType : NodeType;
-        public text: string;
+        public content:List[ContentNode];
+        public this(nodeType: NodeType, content:List[ContentNode])
+        {
+            this.nodeType = nodeType;
+            //fold the content nodes if they match
+            this.content = List();
+            mutable lastNode = null;
+            foreach(node in content)
+            {
+                if (lastNode==null)
+                {
+                    this.content.Add(node);
+                    lastNode = node;
+                }
+                else
+                    {
+                        if (lastNode.nodeType == node.nodeType)
+                        {
+                            this.content.RemoveAt(this.content.Count()-1);
+                            lastNode = ContentNode(node.nodeType,lastNode.text + node.text);
+                            this.content.Add(lastNode);
+                        }
+                        else{
+                            this.content.Add(node);
+                            lastNode = node;
+                        }
+                    }
+            }
+            //this.content = content;
+        }
+        DotDotDot(text: string, length : int) : string
+        {
+            | _ when (text.Length < length) => text
+            | _ => string.Join("", text.Take(length-3))+"..."
+        }
+        public override ToString():string
+        {
+                    def text = content.FoldLeft("",(i,acc)=>acc+i.text);
+            nodeType.ToString().Split('+').Last() +"\n"
+            + $"\t$(DotDotDot(text,50))";
+        }
     }
 }

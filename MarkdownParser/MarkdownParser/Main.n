@@ -19,20 +19,17 @@ namespace MarkdownParser
             parse.filename = "./test.docx";
             def result = parse.Parse(test);
             Debugger(result.Value, array[Node.NodeType.LineBreak() : Node.NodeType]);
+            def word = WordCreator();
+            def document = word.MakeDocument("test.docx",result.Value);
+            document.Save();
             WriteLine("Press any key to exit");
             _ = ReadKey();
-        }
-        DotDotDot(text: string, length : int) : string
-        {
-            | _ when (text.Length < length) => text
-            | _ => string.Join("", text.Take(length-3))+"..."
         }
         Debugger(nodes : List[Node], filter : array[Node.NodeType]): void
         {
             foreach(node when !filter.Contains(node.nodeType) in nodes)
             {
-                Console.WriteLine(node.nodeType.ToString().Split('+').Last());
-                Console.WriteLine($"\t$(DotDotDot(node.text,50))");
+                Console.WriteLine(node);
             }
         }
     }

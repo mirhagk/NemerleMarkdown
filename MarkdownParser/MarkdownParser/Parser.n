@@ -19,33 +19,49 @@ namespace MarkdownParser
         any : char = ['\u0000'..'\uFFFF'];
         anyChar : char = !('\n' / '\r') any;
         number = ['0' .. '9'];
-        content : ContentNode = anyChar;
+        content : ContentNode = bold / plain;
+        plain : ContentNode = anyChar;
+        bold : ContentNode = "**" (!'*' anyChar)+ "**";
         newline : void = linebreak;
         newlines : void = newline+;
         spaces : void = ' '*;
         horizontalRule : Node = '-' spaces '-' spaces '-' (spaces '-')* / '=' spaces '=' spaces '=' (spaces '=')* / '*' spaces '*' spaces '*' (spaces '*')*;
         setextBottom : char = '=' spaces '=' spaces '=' (spaces '=')* / '-' spaces '-' spaces '-' (spaces '-')*;
-        setextHeading : Node = anyChar* newline setextBottom newline;
+        setextHeading : Node = content* newline setextBottom newline;
         headingMatchSymbol : char = '#';
-        atxHeading : Node = headingMatchSymbol+ spaces (!('#') anyChar)* '#'* newlines?;
+        atxHeading : Node = headingMatchSymbol+ spaces (!('#') content)* '#'* newlines?;
         heading : Node = atxHeading / setextHeading;
         docPiece : Node = heading;
-        paragraph: Node = (!docPiece anyChar+ newline?)+;
+        paragraph: Node = (!docPiece content+ newline?)+;
+        //paragraph: Node = (content+ newline?)+;
         linebreak : Node = ("\n\r" / "\r\n" / '\r' / 'n');
         document : List[Node] = (docPiece / paragraph / linebreak)*;
+        //document : List[Node] = (paragraph / linebreak)*;
       //Rules
     }
   )]
   public class Parser
   {
-      public mutable filename : string;
-      content(x : char):ContentNode
+      private listCharToString(text: List[char]):string
       {
-          ContentNode(ContentNode.NodeType.Text(),x.ToString());
+          string.Join("",text);
+      }
+      public mutable filename : string;
+      content(x: ContentNode):ContentNode
+      {
+          x;
+      }
+      plain(x : char):ContentNode
+      {
+          ContentNode(ContentNode.NodeType.Text,x.ToString());
+      }
+      bold(_ : NToken, text :List[char], _:NToken):ContentNode
+      {
+          ContentNode(ContentNode.NodeType.Bold,listCharToString(text));
       }
       horizontalRule(_ : NToken, _:NToken,_:NToken, _:List[NToken]):Node
       {
-          Node(Node.NodeType.HorizontalRule(),"");
+          Node(Node.NodeType.HorizontalRule(),List());
       }
       headingMatchSymbol(x : NToken) : char
       {
@@ -55,35 +71,34 @@ namespace MarkdownParser
       {
           GetText(symbol)[0];
       }
-      setextHeading(text: List[char], symbol :char) : Node
+      setextHeading(text: List[ContentNode], symbol :char) : Node
       {
           createHeader(if (symbol == '=') 1 else 2, text);
       }
-      createHeader(level: int, letters: List[char]) : Node
+      createHeader(level: int, text: List[ContentNode]) : Node
       {
-          def text = string.Join("",letters);
           Node(Node.NodeType.Heading(level),text);
       }
-      atxHeading(lvl : List[char], text: List[char], _ : NToken):Node
+      atxHeading(lvl : List[char], text: List[ContentNode], _ : NToken):Node
       {
           createHeader(lvl.Count(),text);
       }
       linebreak(_ : NToken):Node
       {
-          Node(Node.NodeType.LineBreak(),"");
+          Node(Node.NodeType.LineBreak(),List());
       }
       any(letter: NToken):char
       {
-          GetText(letter)[0]
+          GetText(letter)[0];
       }
-      paragraph( letters : List[List[char]]):Node
+      paragraph( text: List[List[ContentNode]]):Node
       {
-          def text = string.Join("",letters.Select((x)=>string.Join("",x)));
-          Node(Node.NodeType.Paragraph(),text)
+          //def text = string.Join("",letters.Select((x)=>string.Join("",x)));
+          Node(Node.NodeType.Paragraph(),text.Flatten().ToList());
       }
       document (pieces:List[Node]):List[Node]
       {
-          pieces
+          pieces;
       }
   }
 }

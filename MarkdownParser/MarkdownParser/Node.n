@@ -19,6 +19,7 @@ namespace MarkdownParser
             | Italics
         }
         public nodeType: NodeType;
+        public innerNodes: List[ContentNode];
         public text: string;
     }
     //[Record]
@@ -54,7 +55,7 @@ namespace MarkdownParser
                         if (lastNode.nodeType == node.nodeType)
                         {
                             this.content.RemoveAt(this.content.Count()-1);
-                            lastNode = ContentNode(node.nodeType,lastNode.text + node.text);
+                            lastNode = ContentNode(node.nodeType,List(), lastNode.text + node.text);
                             this.content.Add(lastNode);
                         }
                         else{

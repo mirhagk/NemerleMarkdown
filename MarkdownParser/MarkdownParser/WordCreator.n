@@ -28,6 +28,26 @@ namespace MarkdownParser
             headers[0].Size = 30;
             plain.Size = 12;
         }
+        AddNodesToParagraph(paragraph: Paragraph, nodes:List[ContentNode], style:Formatting):void
+        {
+            foreach(node in nodes)
+            {
+                _ = match(node.nodeType)
+                {
+                    | ContentNode.NodeType.Bold => {
+                        style.Bold=true;
+                        AddNodesToParagraph(paragraph, node.innerNodes, style);
+                        style.Bold = false;
+                    }
+                    | ContentNode.NodeType.Italics => {
+                        style.Italic = true;
+                        AddNodesToParagraph(paragraph, node.innerNodes, style);
+                        style.Italic = false;
+                    }
+                    | _ => paragraph.InsertText(node.text,false,style);
+                }
+            }
+        }
         public MakeDocument(filename: string, nodes: List[Node]) : DocX
         {
             def document = DocX.Create(filename);
@@ -42,7 +62,8 @@ namespace MarkdownParser
                                    | _ => plain;
                                }
                 def para = document.InsertParagraph("",false,style);
-                foreach(content in node.content)
+                AddNodesToParagraph(para,node.content,style);
+                /*foreach(content in node.content)
                 {
                     _ = match(content.nodeType)
                            {
@@ -53,7 +74,7 @@ namespace MarkdownParser
                     para.InsertText(content.text,false,style);
                     style.Bold = false;
                     style.Italic = false;
-                }
+                }*/
             }
             document;
         }

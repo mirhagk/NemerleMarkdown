@@ -11,14 +11,51 @@ using Novacode;
 
 namespace MarkdownParser
 {
-  /// <summary>
-  /// Description of WordCreator.
-  /// </summary>
-  class WordCreator
-  {
-      public MakeDocument(filename: string, nodes: List[Node]) : DocX
-      {
-          throw System.Exception();
-      }
-  }
+/// <summary>
+/// Description of WordCreator.
+/// </summary>
+    class WordCreator
+    {
+        headers : List[Formatting] = List(9);
+        plain = Formatting();
+        public this()
+        {
+            foreach(i in [0..8])
+            {
+                headers.Add(Formatting());
+                headers[i].Size=30 - i*2;
+            }
+            headers[0].Size = 30;
+            plain.Size = 12;
+        }
+        public MakeDocument(filename: string, nodes: List[Node]) : DocX
+        {
+            def document = DocX.Create(filename);
+            def format = Formatting();
+            format.Size = 20;
+            foreach(node in nodes)
+            {
+                def style =
+                               match(node.nodeType)
+                               {
+                                   | Node.NodeType.Heading(lvl) => headers[lvl];
+                                   | _ => plain;
+                               }
+                def para = document.InsertParagraph("",false,style);
+                foreach(content in node.content)
+                {
+                    _ = match(content.nodeType)
+                           {
+                               | ContentNode.NodeType.Bold => style.Bold = true;
+                               | ContentNode.NodeType.Italics => style.Italic = true;
+                               | _ => _ = null;
+                           }
+                    para.InsertText(content.text,false,style);
+                    style.Bold = false;
+                    style.Italic = false;
+                }
+            }
+            document;
+        }
+    }
 }

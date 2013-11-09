@@ -19,10 +19,11 @@ namespace MarkdownParser
         any : char = ['\u0000'..'\uFFFF'];
         anyChar : char = !('\n' / '\r') any;
         number = ['0' .. '9'];
-        content : ContentNode = bold / italic / plain;
+        content : ContentNode = bold / italic / link / plain;
         plain : ContentNode = anyChar;
         bold : ContentNode = "**" (!'*' plain / italic)+ "**";
         italic: ContentNode = '*' (!'*' plain / bold) + '*';
+        link: ContentNode = '[' (!']' anyChar)+ "](" (!')' anyChar)* ')';
         newline : void = linebreak;
         newlines : void = newline+;
         spaces : void = ' '*;
@@ -54,15 +55,20 @@ namespace MarkdownParser
       }
       plain(x : char):ContentNode
       {
-          ContentNode(ContentNode.NodeType.Text,List(),x.ToString());
+          ContentNode(ContentNode.NodeType.Text(),List(),x.ToString());
+      }
+      //link: ContentNode = '[' (!']' anyChar)+ "](" (!')' anyChar)* ')';
+      link(_:NToken, text:List[char], _:NToken, source:List[char], _:NToken):ContentNode
+      {
+          ContentNode(ContentNode.NodeType.Link(listCharToString(source)),List(),listCharToString(text));
       }
       bold(_ : NToken, nodes :List[ContentNode], _:NToken):ContentNode
       {
-          ContentNode(ContentNode.NodeType.Bold,nodes,"");
+          ContentNode(ContentNode.NodeType.Bold(),nodes,"");
       }
       italic(_:NToken, nodes: List[ContentNode], _:NToken):ContentNode
       {
-          ContentNode(ContentNode.NodeType.Italics,nodes,"");
+          ContentNode(ContentNode.NodeType.Italics(),nodes,"");
       }
       horizontalRule(_ : NToken, _:NToken,_:NToken, _:List[NToken]):Node
       {

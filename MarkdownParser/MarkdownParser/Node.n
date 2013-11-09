@@ -12,11 +12,15 @@ namespace MarkdownParser
     [Record]
     public class ContentNode
     {
-        public enum NodeType
+        public variant NodeType
         {
             | Text
             | Bold
             | Italics
+            | Link
+                {
+                    source: string
+                }
         }
         public nodeType: NodeType;
         public innerNodes: List[ContentNode];

@@ -28,7 +28,7 @@ namespace MarkdownParser
             headers[0].Size = 30;
             plain.Size = 12;
         }
-        AddNodesToParagraph(paragraph: Paragraph, nodes:List[ContentNode], style:Formatting):void
+        AddNodesToParagraph(document: DocX, paragraph: Paragraph, nodes:List[ContentNode], style:Formatting):void
         {
             foreach(node in nodes)
             {
@@ -36,13 +36,18 @@ namespace MarkdownParser
                 {
                     | ContentNode.NodeType.Bold => {
                         style.Bold=true;
-                        AddNodesToParagraph(paragraph, node.innerNodes, style);
+                        AddNodesToParagraph(document, paragraph, node.innerNodes, style);
                         style.Bold = false;
                     }
                     | ContentNode.NodeType.Italics => {
                         style.Italic = true;
-                        AddNodesToParagraph(paragraph, node.innerNodes, style);
+                        AddNodesToParagraph(document, paragraph, node.innerNodes, style);
                         style.Italic = false;
+                    }
+                    | ContentNode.NodeType.Link(source)=> {
+                        def link = if (String.IsNullOrWhiteSpace(source)) node.text else source;
+                        def hyperlink = document.AddHyperlink(node.text,Uri(link));
+                        def _ = paragraph.AppendHyperlink(hyperlink);
                     }
                     | _ => paragraph.InsertText(node.text,false,style);
                 }
@@ -62,7 +67,7 @@ namespace MarkdownParser
                                    | _ => plain;
                                }
                 def para = document.InsertParagraph("",false,style);
-                AddNodesToParagraph(para,node.content,style);
+                AddNodesToParagraph(document, para,node.content,style);
             }
             document;
         }
